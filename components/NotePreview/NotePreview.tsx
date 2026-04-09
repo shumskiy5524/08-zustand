@@ -1,7 +1,8 @@
-use client";
+"use client";
 
 import React, { useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+
 
 interface Note {
   id: string;

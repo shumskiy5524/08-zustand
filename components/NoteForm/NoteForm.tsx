@@ -4,42 +4,59 @@ import { useNoteStore } from "@/lib/store/noteStore";
 import { createNote } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { NewNote } from "@/types/note"; 
 import css from "./NoteForm.module.css";
-import type { NoteTag, NewNote } from "@/types/note";
 
 export default function NoteForm() {
   const router = useRouter();
+  
+  
   const { draft, setDraft, clearDraft } = useNoteStore();
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setDraft({ [e.target.name]: e.target.value });
+ 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+   
+    setDraft({ [name]: value });
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
 
-    const newNote: NewNote = {
-  title: formData.get("title") as string,
-  content: formData.get("content") as string,
-  tag: formData.get("tag") as NoteTag, 
-};
+    try {
+     
+      await createNote(draft as NewNote);
+      
+    
+      clearDraft();
+      
+      
+      router.back();
+    } catch (error) {
+      console.error("Помилка при створенні:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    await createNote(newNote);
-
-    clearDraft();
+  
+  const handleCancel = () => {
     router.back();
   };
 
   return (
-    <form action={handleSubmit} className={css.form}>
+    <form onSubmit={handleSubmit} className={css.form}>
       <div className={css.formGroup}>
         <label>Title</label>
         <input
           name="title"
-          value={draft.title}
+          value={draft.title} 
           onChange={handleChange}
-          className={css.input}
+          required
         />
       </div>
 
@@ -47,20 +64,15 @@ export default function NoteForm() {
         <label>Content</label>
         <textarea
           name="content"
-          value={draft.content}
+          value={draft.content} 
           onChange={handleChange}
-          className={css.textarea}
+          required
         />
       </div>
 
       <div className={css.formGroup}>
         <label>Tag</label>
-        <select
-          name="tag"
-          value={draft.tag}
-          onChange={handleChange}
-          className={css.select}
-        >
+        <select name="tag" value={draft.tag} onChange={handleChange}>
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
@@ -70,12 +82,9 @@ export default function NoteForm() {
       </div>
 
       <div className={css.actions}>
-        <button type="button" onClick={() => router.back()}>
-          Cancel
-        </button>
-
+        <button type="button" onClick={handleCancel}>Cancel</button>
         <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create note"}
+          {loading ? "Saving..." : "Create Note"}
         </button>
       </div>
     </form>
