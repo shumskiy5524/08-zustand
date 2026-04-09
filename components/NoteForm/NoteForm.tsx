@@ -4,46 +4,45 @@ import { useNoteStore } from "@/lib/store/noteStore";
 import { createNote } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { NewNote } from "@/types/note"; 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { NewNote } from "@/types/note";
 import css from "./NoteForm.module.css";
 
 export default function NoteForm() {
   const router = useRouter();
-  
-  
+  const queryClient = useQueryClient();
+
   const { draft, setDraft, clearDraft } = useNoteStore();
   const [loading, setLoading] = useState(false);
 
- 
+  const mutation = useMutation({
+    mutationFn: (newNote: NewNote) => createNote(newNote),
+    onSuccess: () => {
+      clearDraft(); 
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.back();
+    },
+    onError: (error) => {
+      console.error("Помилка при створенні нотатки:", error);
+    },
+    onSettled: () => {
+      setLoading(false);
+    },
+  });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-   
     setDraft({ [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-     
-      await createNote(draft as NewNote);
-      
-    
-      clearDraft();
-      
-      
-      router.back();
-    } catch (error) {
-      console.error("Помилка при створенні:", error);
-    } finally {
-      setLoading(false);
-    }
+    mutation.mutate(draft as NewNote); 
   };
 
-  
   const handleCancel = () => {
     router.back();
   };
@@ -54,7 +53,7 @@ export default function NoteForm() {
         <label>Title</label>
         <input
           name="title"
-          value={draft.title} 
+          value={draft.title}
           onChange={handleChange}
           required
         />
@@ -64,7 +63,7 @@ export default function NoteForm() {
         <label>Content</label>
         <textarea
           name="content"
-          value={draft.content} 
+          value={draft.content}
           onChange={handleChange}
           required
         />
