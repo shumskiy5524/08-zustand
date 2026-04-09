@@ -3,7 +3,6 @@
 import { useNoteStore } from "@/lib/store/noteStore";
 import { createNote } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { NewNote } from "@/types/note";
 import css from "./NoteForm.module.css";
@@ -12,21 +11,25 @@ export default function NoteForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { draft, setDraft, clearDraft } = useNoteStore();
-  const [loading, setLoading] = useState(false);
 
-  const mutation = useMutation({
+  const { draft, setDraft, clearDraft } = useNoteStore();
+
+ 
+  const { mutate, isPending } = useMutation({
     mutationFn: (newNote: NewNote) => createNote(newNote),
     onSuccess: () => {
+     
       clearDraft(); 
+      
+     
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      
+      
       router.back();
     },
     onError: (error) => {
       console.error("Помилка при створенні нотатки:", error);
-    },
-    onSettled: () => {
-      setLoading(false);
+      alert("Не вдалося створити нотатку. Спробуйте ще раз.");
     },
   });
 
@@ -34,25 +37,28 @@ export default function NoteForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+   
     setDraft({ [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    mutation.mutate(draft as NewNote); 
+    
+    mutate(draft as NewNote); 
   };
 
   const handleCancel = () => {
+ 
     router.back();
   };
 
   return (
     <form onSubmit={handleSubmit} className={css.form}>
       <div className={css.formGroup}>
-        <label>Title</label>
+        <label className={css.label}>Title</label>
         <input
           name="title"
+          className={css.input}
           value={draft.title}
           onChange={handleChange}
           required
@@ -60,9 +66,10 @@ export default function NoteForm() {
       </div>
 
       <div className={css.formGroup}>
-        <label>Content</label>
+        <label className={css.label}>Content</label>
         <textarea
           name="content"
+          className={css.textarea}
           value={draft.content}
           onChange={handleChange}
           required
@@ -70,8 +77,13 @@ export default function NoteForm() {
       </div>
 
       <div className={css.formGroup}>
-        <label>Tag</label>
-        <select name="tag" value={draft.tag} onChange={handleChange}>
+        <label className={css.label}>Tag</label>
+        <select 
+          name="tag" 
+          className={css.select} 
+          value={draft.tag} 
+          onChange={handleChange}
+        >
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
@@ -81,9 +93,19 @@ export default function NoteForm() {
       </div>
 
       <div className={css.actions}>
-        <button type="button" onClick={handleCancel}>Cancel</button>
-        <button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Create Note"}
+        <button 
+          type="button" 
+          onClick={handleCancel} 
+          className={css.cancelBtn}
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          disabled={isPending} 
+          className={css.submitBtn}
+        >
+          {isPending ? "Saving..." : "Create Note"}
         </button>
       </div>
     </form>
