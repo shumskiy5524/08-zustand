@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { fetchNoteById } from "@/lib/api";
 
-export async function generateMetadata({ params }: any): Promise<Metadata> {
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const note = await fetchNoteById(id);
 
+  
+  
   return {
     title: note.title,
     description: note.content || "",
