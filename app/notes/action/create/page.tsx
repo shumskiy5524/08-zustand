@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   description: "Page to create a new note in the Notes app",
   openGraph: {
     title: "Create New Note | NoteHub",
-    description: "Create a new note and keep your thoughts organized in your Notes app",
+    description:
+      "Create a new note and keep your thoughts organized in your Notes app",
     url: "https://notehub.app/notes/action/create",
     type: "website",
   },

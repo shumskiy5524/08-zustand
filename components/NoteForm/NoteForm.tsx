@@ -11,21 +11,17 @@ export default function NoteForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-
   const { draft, setDraft, clearDraft } = useNoteStore();
 
- 
+
   const { mutate, isPending } = useMutation({
-    mutationFn: (newNote: NewNote) => createNote(newNote),
+    mutationFn: createNote,
     onSuccess: () => {
-     
       clearDraft(); 
-      
-     
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      
-      
-      router.back();
+
+    
+      router.push("/notes");
     },
     onError: (error) => {
       console.error("Помилка при створенні нотатки:", error);
@@ -37,19 +33,32 @@ export default function NoteForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-   
-    setDraft({ [name]: value });
+
+    
+    setDraft({
+      ...draft,
+      [name]: value,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    mutate(draft as NewNote); 
+
+  
+    if (!draft.title || !draft.content) {
+      alert("Заповніть всі поля");
+      return;
+    }
+
+    mutate(draft as NewNote);
   };
 
   const handleCancel = () => {
- 
-    router.back();
+   
+    clearDraft();
+
+   
+    router.push("/notes");
   };
 
   return (
@@ -59,7 +68,8 @@ export default function NoteForm() {
         <input
           name="title"
           className={css.input}
-          value={draft.title}
+         
+          value={draft.title || ""}
           onChange={handleChange}
           required
         />
@@ -70,7 +80,8 @@ export default function NoteForm() {
         <textarea
           name="content"
           className={css.textarea}
-          value={draft.content}
+       
+          value={draft.content || ""}
           onChange={handleChange}
           required
         />
@@ -78,10 +89,10 @@ export default function NoteForm() {
 
       <div className={css.formGroup}>
         <label className={css.label}>Tag</label>
-        <select 
-          name="tag" 
-          className={css.select} 
-          value={draft.tag} 
+        <select
+          name="tag"
+          className={css.select}
+          value={draft.tag || "Todo"}
           onChange={handleChange}
         >
           <option value="Todo">Todo</option>
@@ -93,16 +104,17 @@ export default function NoteForm() {
       </div>
 
       <div className={css.actions}>
-        <button 
-          type="button" 
-          onClick={handleCancel} 
+        <button
+          type="button"
+          onClick={handleCancel}
           className={css.cancelBtn}
         >
           Cancel
         </button>
-        <button 
-          type="submit" 
-          disabled={isPending} 
+
+        <button
+          type="submit"
+          disabled={isPending}
           className={css.submitBtn}
         >
           {isPending ? "Saving..." : "Create Note"}
