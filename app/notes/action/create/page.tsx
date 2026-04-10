@@ -1,4 +1,3 @@
-
 import { Metadata } from "next";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
@@ -11,6 +10,16 @@ export const metadata: Metadata = {
       "Create a new note and keep your thoughts organized in your Notes app",
     url: "https://notehub.app/notes/action/create",
     type: "website",
+
+  
+    images: [
+      {
+        url: "https://notehub.app/og-image.png", 
+        width: 1200,
+        height: 630,
+        alt: "Create Note Page",
+      },
+    ],
   },
 };
 

@@ -8,7 +8,8 @@ import "./globals.css";
 const roboto = Roboto({ 
   subsets: ["latin"], 
   weight: ["400", "500", "700"], 
-  variable: "--font-roboto" 
+  variable: "--font-roboto",
+  display: "swap", 
 });
 
 export const metadata: Metadata = {
@@ -18,7 +19,14 @@ export const metadata: Metadata = {
     title: "NoteHub",
     description: "Application for creating and managing notes",
     url: "https://notehub.app",
-    images: [{ url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg" }],
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        width: 1200,   
+        height: 630,
+        alt: "NoteHub App",
+      },
+    ],
   },
 };
 
@@ -26,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={roboto.variable}>
       <body style={{ display: "flex", flexDirection: "column", minHeight: "100vh", margin: 0 }}>
-    
         <Providers>
           <Header />
           <main style={{ flex: 1 }}>{children}</main>
